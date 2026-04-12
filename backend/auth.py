@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import User
 
-# Change this later (keep secret in real projects)
 SECRET_KEY = "lifelink_secret_key_change_later"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120
@@ -26,25 +25,34 @@ def get_db():
         db.close()
 
 
+def normalize_password(password: str) -> str:
+    return password.strip()
+
+
 def hash_password(password: str) -> str:
-    password = password.strip()
-    if len(password.encode("utf-8")) > 72:
-        password = password.encode("utf-8")[:72].decode("utf-8", errors="ignore")
-    return pwd_context.hash(password)
+    return pwd_context.hash(normalize_password(password))
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    return pwd_context.verify(password, password_hash)
+    try:
+        return pwd_context.verify(normalize_password(password), password_hash)
+    except Exception:
+        return False
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.utcnow() + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or expired token",
@@ -69,7 +77,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 def require_role(required_role: str):
     def role_checker(current_user: User = Depends(get_current_user)):
-        if current_user.role != required_role:
-            raise HTTPException(status_code=403, detail=f"Only {required_role} can perform this action")
+        if current_user.role.upper() != required_role.upper():
+            raise HTTPException(
+                status_code=403,
+                detail=f"Only {required_role} can perform this action"
+            )
         return current_user
     return role_checker
