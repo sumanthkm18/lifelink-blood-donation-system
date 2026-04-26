@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API = "https://lifelink-backend-qqz7.onrender.com";
 
 export default function Dashboard() {
   const navigate = useNavigate();
