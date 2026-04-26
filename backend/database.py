@@ -1,19 +1,41 @@
+import os
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker 
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql://postgres:1234@localhost/lifelink_db"
+# =========================
+# DATABASE URL
+# =========================
 
-engine = create_engine(DATABASE_URL)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-SessionLocal = sessionmaker(autocommit = False,
-autoflush = False, bind = engine)
+# Fallback for local development (optional)
+if not DATABASE_URL:
+    DATABASE_URL = "postgresql://postgres:password@localhost/lifelink_db"
+
+
+# =========================
+# ENGINE
+# =========================
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"sslmode": "require"} if "render" in DATABASE_URL else {}
+)
+
+
+# =========================
+# SESSION
+# =========================
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
+
+
+# =========================
+# BASE
+# =========================
 
 Base = declarative_base()
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
