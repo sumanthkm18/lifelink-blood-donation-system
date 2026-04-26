@@ -1,43 +1,43 @@
-from fastapi import FastAPI, Depends
-from fastapi import Depends
-from database import engine
-from models import Base
-import routers
-from routers.auth import router as auth_router   # 👈 IMPORTANT
-from routers.donor import router as donor_router  
-from routers.requests import router as requests_router      
-from auth import get_current_user
-from routers.responses import router as responses_router
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from database import Base, engine
+
+# 🔹 Import your routers (make sure these files exist)
+from routers import auth, users, donors, requests
+
+# =========================
+# CREATE TABLES
+# =========================
+Base.metadata.create_all(bind=engine)
+
+# =========================
+# INIT APP
+# =========================
 app = FastAPI()
 
+# =========================
+# CORS (IMPORTANT for frontend)
+# =========================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # you can restrict later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth_router)   # 👈 Must match the name above
-app.include_router(donor_router)   # 👈 Must match the name above
-app.include_router(responses_router)   # 👈 Must match the name above
-app.include_router(requests_router,prefix="/requests")   # 👈 Must match the name above
-
-@app.get("/me")
-def me(current_user = Depends(get_current_user)):
-    return {
-        "id": current_user.id,
-        "name": current_user.name,
-        "email": current_user.email,
-        "role": current_user.role
-    }
-
-Base.metadata.create_all(bind=engine)
-
+# =========================
+# ROOT ROUTE (fix white screen)
+# =========================
 @app.get("/")
 def home():
-    return {"message": "Lifelink Backend Running Successfully"}
+    return {"message": "Lifelink Backend is Running 🚀"}
 
-app.include_router(auth_router)   # 👈 Must match the name above
+# =========================
+# INCLUDE ROUTERS
+# =========================
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(donors.router, prefix="/donors", tags=["Donors"])
+app.include_router(requests.router, prefix="/requests", tags=["Requests"])
