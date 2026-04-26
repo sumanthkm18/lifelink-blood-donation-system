@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import Base, engine
 
 # 🔹 Import your routers (make sure these files exist)
-from routers import auth, users, donors, requests
+from backend.routers import auth, users, donors, requests
 
 # =========================
 # CREATE TABLES

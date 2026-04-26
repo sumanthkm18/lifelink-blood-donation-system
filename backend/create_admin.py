@@ -1,4 +1,4 @@
-from database import SessionLocal
+from backend.database import SessionLocal
 from models import User
 from auth import hash_password
 
