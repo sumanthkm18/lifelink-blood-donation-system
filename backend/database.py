@@ -6,12 +6,10 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 # DATABASE URL
 # =========================
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Fallback for local development (optional)
 if not DATABASE_URL:
-    DATABASE_URL = "postgresql://postgres:password@localhost/lifelink_db"
-
+    raise Exception("DATABASE_URL is not set!")
 
 # =========================
 # ENGINE
@@ -19,9 +17,8 @@ if not DATABASE_URL:
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"sslmode": "require"} if "render" in DATABASE_URL else {}
+    connect_args={"sslmode": "require"}
 )
-
 
 # =========================
 # SESSION
@@ -33,9 +30,19 @@ SessionLocal = sessionmaker(
     bind=engine
 )
 
-
 # =========================
 # BASE
 # =========================
 
 Base = declarative_base()
+
+# =========================
+# 🔥 ADD THIS (IMPORTANT)
+# =========================
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
