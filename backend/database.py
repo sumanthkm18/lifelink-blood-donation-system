@@ -2,43 +2,20 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# =========================
-# DATABASE URL
-# =========================
-
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise Exception("DATABASE_URL is not set!")
+    raise Exception("❌ DATABASE_URL is not set! Create a .env file.")
 
-# =========================
-# ENGINE
-# =========================
+connect_args = {}
+if "neon.tech" in DATABASE_URL or "render.com" in DATABASE_URL:
+    connect_args = {"sslmode": "require"}
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"sslmode": "require"}
-)
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
-# =========================
-# SESSION
-# =========================
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
-
-# =========================
-# BASE
-# =========================
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
-
-# =========================
-# 🔥 ADD THIS (IMPORTANT)
-# =========================
 
 def get_db():
     db = SessionLocal()
