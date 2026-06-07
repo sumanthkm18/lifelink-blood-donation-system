@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API = "https://lifelink-backend-qqz7.onrender.com";
+const API = "https://lifelink-blood-donation-system.onrender.com";
 
 export default function Admin() {
   const [requests, setRequests] = useState([]);

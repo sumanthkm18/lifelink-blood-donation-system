@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API = "https://lifelink-backend-qqz7.onrender.com";
+const API = "https://lifelink-blood-donation-system.onrender.com";
 
 export default function Dashboard() {
   const navigate = useNavigate();
